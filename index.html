@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MCR Fan Project - Concert Light Show</title>
+    <!-- Include NoSleep.js to keep the phone screen from dimming/locking -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/nosleep.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0c10;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Main Selection Menu Layout */
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+            transition: opacity 0.3s ease;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #888888;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #c5c6c7;
+            margin-bottom: 25px;
+            max-width: 310px;
+            line-height: 1.4;
+        }
+
+        /* Brightness Warning Tip Box */
+        .tip-box {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #ff0000;
+            padding: 10px 15px;
+            margin-bottom: 25px;
+            max-width: 310px;
+            font-size: 0.85rem;
+            color: #aaaaaa;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 320px;
+            padding: 20px;
+            margin: 10px 0;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-song1 {
+            background: linear-gradient(135deg, #ff0000, #990000);
+            color: white;
+        }
+
+        .btn-song2 {
+            background: linear-gradient(135deg, #1e3c72, #0d1b2a);
+            color: white;
+        }
+
+        /* Footer Credit */
+        .footer-credit {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.75rem;
+            color: #555555;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Full Screen Light Overlay Layout */
+        .light-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Creative Pulsing Text on Light Screen */
+        .light-glow-text {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.4);
+            animation: pulseText 2s infinite ease-in-out;
+            margin-top: 10px;
+        }
+
+        @keyframes pulseText {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0.2; }
+        }
+
+        /* Center-Bottom Exit Button Style */
+        .close-btn {
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Entry Menu -->
+    <div class="menu-container" id="menuContainer">
+        <h1>MCR Fan Project</h1>
+        <div class="subtitle">The Black Parade Light Show</div>
+        
+        <p>When it's time for the fan action, tap your song choice below to light up the stadium!</p>
+        
+        <div class="tip-box">
+            💡 <strong>Tip:</strong> Turn your screen brightness all the way up for the best effect!
+        </div>
+        
+        <!-- Buttons for Famous Last Words and Disenchanted -->
+        <button class="btn btn-song1" onclick="activateLight('#FF0000')">Famous Last Words</button>
+        <button class="btn btn-song2" onclick="activateLight('#00008B')">Disenchanted</button>
+
+        <div class="footer-credit">Made by MCR Fans, For MCR Fans</div>
+    </div>
+
+    <!-- The Full-Screen Solid Color Screen with Center-Bottom Exit Button -->
+    <div class="light-overlay" id="lightOverlay">
+        <div class="light-glow-text">MCR Fan Project</div>
+        <button class="close-btn" onclick="deactivateLight()">Exit Light</button>
+    </div>
+
+    <script>
+        let noSleep = null;
+        try {
+            if (typeof NoSleep !== 'undefined') {
+                noSleep = new NoSleep();
+            }
+        } catch (e) {
+            console.log("NoSleep not supported or blocked");
+        }
+
+        const menuContainer = document.getElementById('menuContainer');
+        const lightOverlay = document.getElementById('lightOverlay');
+
+        function activateLight(colorHex) {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+
+            if (noSleep) {
+                try { noSleep.enable(); } catch (e) {}
+            }
+
+            lightOverlay.style.backgroundColor = colorHex;
+
+            // Reveal light overlay using flexbox layout
+            menuContainer.style.display = 'none';
+            lightOverlay.style.display = 'flex';
+
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            }
+        }
+
+        function deactivateLight() {
+            if (noSleep) {
+                try { noSleep.disable(); } catch (e) {}
+            }
+
+            lightOverlay.style.display = 'none';
+            menuContainer.style.display = 'flex';
+
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
