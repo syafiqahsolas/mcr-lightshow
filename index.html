@@ -30,7 +30,7 @@
             background-color: #000000 !important;
         }
         body.battery-saver .menu-container {
-            opacity: 0.85; /* Dims brightness slightly to save power */
+            opacity: 0.85;
         }
 
         /* Main Selection Menu Layout */
@@ -67,6 +67,28 @@
             margin-bottom: 20px;
             max-width: 310px;
             line-height: 1.4;
+        }
+
+        /* Offline Ready Notification Banner */
+        .offline-banner {
+            background-color: rgba(30, 60, 114, 0.9);
+            color: #ffffff;
+            font-size: 0.8rem;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            max-width: 310px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #4a90e2;
+            animation: fadeIn 0.5s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: none; /* Hidden by default until sw is ready */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Brightness & Toggle Box */
@@ -224,6 +246,11 @@
         <h1>MCR Fan Project</h1>
         <div class="subtitle">The Black Parade Light Show</div>
         
+        <!-- Offline Status Notification Banner -->
+        <div id="offlineStatus" class="offline-banner">
+            ⚡ Ready for Offline Use! Safe to disconnect.
+        </div>
+
         <p>When it's time for the fan action, tap your song choice below to light up the stadium!</p>
         
         <!-- Control Box with Brightness Tip & Battery Saver Toggle -->
@@ -263,13 +290,33 @@
             }
         }
 
-        // 2. Register Service Worker for Offline PWA Caching
+        // 2. Register Service Worker & Listen for Offline Completion
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch((err) => {
-                    console.log('Service Worker registration skipped/failed: ', err);
-                });
+            navigator.serviceWorker.register('sw.js').then((registration) => {
+                if (navigator.serviceWorker.controller) {
+                    showOfflineReady();
+                }
+
+                registration.onupdatefound = () => {
+                    const installingWorker = registration.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                showOfflineReady();
+                            }
+                        }
+                    };
+                };
+            }).catch((err) => {
+                console.log('Service Worker registration failed: ', err);
             });
+        }
+
+        function showOfflineReady() {
+            const banner = document.getElementById('offlineStatus');
+            if (banner) {
+                banner.style.display = 'block';
+            }
         }
 
         // 3. NoSleep & Light Activation Code
