@@ -1,21 +1,42 @@
-// Simple Service Worker for offline caching
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.match('/').then(() => {
-      return self.skipWaiting();
+const CACHE_NAME = 'mcr-lightshow-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  'https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/nosleep.min.js'
+];
+
+// Install Event: Save files to offline cache immediately
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-  e.clients.claim();
-});
-
-self.addEventListener('fetch', (e) => {
-  // Let the browser do its normal thing, but fall back gracefully offline
-  e.respondWith(
-    fetch(e.request).catch(() => {
-      return caches.match(e.request);
+// Activate Event: Clean up old caches if any
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
     })
+  );
+  self.clients.claim();
+});
+
+// Fetch Event: Serve from cache when offline
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
