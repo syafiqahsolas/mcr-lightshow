@@ -2,20 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MCR Fan Project - Concert Light Show</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MCR Asia Tour - The Light Project</title>
 
-    <!-- PWA: lets users "Add to Home Screen" for a reliable full-screen,
-         offline-launchable app icon instead of relying on a browser tab -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0b0c10">
+    <meta name="theme-color" content="#7DF9FF">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- Include NoSleep.js to keep the phone screen from dimming/locking -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/nosleep.min.js"></script>
+    
     <style>
+        :root {
+            --c-cyan-bg: #7DF9FF;       /* Asia Tour Cyan Background Theme */
+            --c-tour-red: #CE0313;      /* Tour Crimson */
+            --c-surface: #121216;       /* Dark card surface */
+            --c-silver: #000000;        /* Crisp Black Text for Cyan BG */
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -27,371 +32,575 @@
         body, html {
             width: 100%;
             height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0b0c10;
-            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--c-cyan-bg);
+            color: var(--c-silver);
             overflow: hidden;
-            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #050505;
         }
 
-        /* Battery Saver / Dark Theme Mode */
-        body.battery-saver {
-            background-color: #000000 !important;
-        }
-        body.battery-saver .menu-container {
-            opacity: 0.85;
+        .phone-frame {
+            width: 100%;
+            max-width: 414px;
+            height: 100%;
+            max-height: 896px;
+            background-color: var(--c-cyan-bg);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
 
-        /* Main Selection Menu Layout */
+        @media (min-width: 415px) {
+            .phone-frame {
+                border-radius: 40px;
+                border: 8px solid #222;
+                height: 844px;
+            }
+        }
+
         .menu-container {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
             height: 100%;
-            padding: 20px;
-            text-align: center;
-            transition: opacity 0.3s ease;
+            overflow-y: auto;
+            background-color: var(--c-cyan-bg);
         }
 
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-            color: #ff0000;
+        /* ---------- HERO SECTION ---------- */
+        .hero {
+            position: relative;
+            flex: 0 0 auto;
+            padding: calc(24px + env(safe-area-inset-top, 0px)) 20px 32px 20px;
+            background: linear-gradient(180deg, #32b8bd 0%, var(--c-cyan-bg) 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+        }
+
+        .mini-toggle {
+            position: relative;
+            width: 48px;
+            height: 27px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .mini-toggle input { opacity: 0; width: 0; height: 0; }
+        .mini-slider {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,0.2);
+            border: 1px solid #000;
+            border-radius: 20px;
+            transition: 0.25s;
+        }
+        .mini-slider::before {
+            content: "🔋";
+            position: absolute;
+            height: 21px;
+            width: 21px;
+            left: 2px;
+            top: 2px;
+            background-color: #000;
+            border-radius: 50%;
+            transition: 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+        }
+        .mini-toggle input:checked + .mini-slider {
+            background-color: var(--c-tour-red);
+            border-color: var(--c-tour-red);
+        }
+        .mini-toggle input:checked + .mini-slider::before {
+            transform: translateX(21px);
+        }
+
+        .gothic-header-block {
+            padding: 16px 0 6px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .project-tag { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 3px; color: #000; font-weight: 800; opacity: 0.75; }
+        .project-title { font-size: 1.35rem; font-weight: 900; letter-spacing: 2px; color: #000000; text-transform: uppercase; }
+
+        .offline-banner {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: var(--c-cyan-bg);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--c-cyan-bg);
+            display: none;
+            white-space: nowrap;
+        }
+
+        /* ---------- SONG SELECTION SHEET ---------- */
+        .sheet {
+            flex: 1 1 auto;
+            background: #000000;
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            z-index: 2;
+            padding: 24px 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+            border-top: 1px solid rgba(125, 249, 255, 0.2);
+            color: #ffffff;
+            margin-top: -16px;
+        }
+
+        .sheet-header {
+            font-size: 0.78rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
-        }
-
-        .subtitle {
-            font-size: 0.95rem;
-            color: #888888;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        p {
-            font-size: 0.95rem;
-            color: #c5c6c7;
-            margin-bottom: 20px;
-            max-width: 310px;
-            line-height: 1.4;
-        }
-
-        /* Offline Ready Notification Banner */
-        .offline-banner {
-            background-color: rgba(30, 60, 114, 0.9);
-            color: #ffffff;
-            font-size: 0.8rem;
-            padding: 10px 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            max-width: 310px;
-            width: 100%;
-            text-align: center;
-            border: 1px solid #4a90e2;
-            animation: fadeIn 0.5s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            display: none; /* Hidden by default until sw is ready */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Brightness & Toggle Box */
-        .control-box {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-left: 3px solid #ff0000;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-            max-width: 310px;
-            width: 100%;
-            text-align: left;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            color: #aaaaaa;
-        }
-
-        .toggle-label {
+            color: var(--c-cyan-bg);
+            margin-bottom: 14px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-top: 8px;
-            cursor: pointer;
-            color: #ffffff;
-            font-weight: bold;
+            gap: 8px;
+        }
+        .sheet-header::after { content: ""; flex: 1; height: 1px; background: rgba(125, 249, 255, 0.2); }
+
+        .song-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
         }
 
-        /* Toggle Switch Design */
-        .switch {
+        /* Song Tile with Transparent Frosted Box inside */
+        .song-tile {
+            aspect-ratio: 1 / 1;
             position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            border: 1px solid rgba(125, 249, 255, 0.3);
+            border-radius: 18px;
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #333333;
-            transition: .3s;
-            border-radius: 24px;
+            overflow: hidden;
+            padding: 12px;
+            transition: transform 0.15s ease;
         }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #ff0000;
-        }
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
+        .song-tile:active { transform: scale(0.96); }
 
-        .btn {
+        .song-tile-title-box {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            max-width: 320px;
-            padding: 18px;
-            margin: 8px 0;
-            font-size: 1.05rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            transition: transform 0.1s ease;
+            background: rgba(20, 20, 24, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            line-height: 1.2;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
         }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-song1 {
-            background: linear-gradient(135deg, #ff0000, #990000);
-            color: white;
-        }
-
-        .btn-song2 {
-            background: linear-gradient(135deg, #1e3c72, #0d1b2a);
-            color: white;
+        .song-tile-custom {
+            background: linear-gradient(135deg, var(--c-tour-red), var(--c-surface), #000000) !important;
+            border: 1px dashed var(--c-cyan-bg);
         }
 
         .footer-credit {
-            position: absolute;
-            bottom: 15px;
-            font-size: 0.75rem;
-            color: #555555;
-            letter-spacing: 1px;
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.62rem;
+            color: var(--c-cyan-bg);
+            letter-spacing: 2.5px;
             text-transform: uppercase;
+            opacity: 0.7;
         }
 
-        /* Full Screen Light Overlay Layout */
-        .light-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* ---------- CUSTOM COLOR PAGE ---------- */
+        .custom-color-page {
+            position: absolute;
+            inset: 0;
+            z-index: 9998;
+            display: none;
+            flex-direction: column;
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .ccp-header {
+            display: flex;
+            align-items: center;
+            padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 10px 20px;
+        }
+
+        .ccp-back {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--c-surface);
+            border: 1px solid var(--c-cyan-bg);
+            color: #ffffff;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .ccp-preview-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ccp-glow-orb {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: hsl(185, 100%, 65%);
+            box-shadow: 0 0 90px 35px hsla(185, 100%, 65%, 0.5);
+            transition: background 0.05s linear, box-shadow 0.05s linear;
+        }
+
+        .ccp-slider-section {
+            padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px)) 20px;
+        }
+
+        .ccp-slider-caption {
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--c-cyan-bg);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        input[type="range"].ccp-slider {
+            -webkit-appearance: none;
+            appearance: none;
             width: 100%;
-            height: 100%;
+            height: 44px;
+            border-radius: 22px;
+            border: 1px solid var(--c-surface);
+            outline: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, #ff3b3b, #ff9d3b, #ffe13b, #a3ff3b, #3bffb3, #3bd6ff, #3b6bff, #b33bff, #ff3ba3, #ff3b3b);
+        }
+        input[type="range"].ccp-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid #000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .ccp-confirm { margin-top: 16px; }
+
+        /* ---------- FULL SCREEN LIGHT OVERLAY ---------- */
+        .light-overlay {
+            position: absolute;
+            inset: 0;
             display: none;
             z-index: 9999;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-end;
+        }
+
+        .light-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            filter: brightness(1.35) saturate(1.25);
+        }
+
+        .light-bg.pulse {
+            animation: vibrantPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes vibrantPulse {
+            0%, 100% { filter: brightness(1.4) saturate(1.3); }
+            50% { filter: brightness(0.35) saturate(0.8); }
+        }
+
+        .curved-dock {
+            position: relative;
+            z-index: 2;
+            background-color: var(--c-surface);
+            border-radius: 36px 36px 0 0;
+            padding: 16px 32px calc(24px + env(safe-area-inset-bottom, 0px)) 32px;
+            display: flex;
+            justify-content: space-around;
             align-items: center;
-            padding: 40px 20px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+            border-top: 1px solid rgba(125, 249, 255, 0.3);
         }
 
-        .light-glow-text {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: rgba(255, 255, 255, 0.4);
-            animation: pulseText 2s infinite ease-in-out;
-            margin-top: 10px;
+        .curved-dock::before {
+            content: "";
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 36px;
+            background-color: var(--c-surface);
+            border-radius: 45px 45px 0 0;
+            border-top: 1px solid rgba(125, 249, 255, 0.3);
+            z-index: -1;
         }
 
-        @keyframes pulseText {
-            0% { opacity: 0.2; }
-            50% { opacity: 0.7; }
-            100% { opacity: 0.2; }
-        }
-
-        .close-btn {
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            padding: 12px 30px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+        .nav-action-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #ffffff;
+            font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 20px;
+            cursor: pointer;
+            transition: color 0.2s ease;
         }
+        .nav-action-btn:hover { color: var(--c-cyan-bg); }
+
+        .nav-icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #000;
+            border: 1px solid rgba(125, 249, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .nav-action-btn.active .nav-icon-circle {
+            background-color: var(--c-tour-red);
+            border-color: var(--c-cyan-bg);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(125, 249, 255, 0.6);
+        }
+
+        .dock-center-power {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #000;
+            border: 2px solid var(--c-cyan-bg);
+            color: var(--c-cyan-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.8);
+            margin-top: -22px;
+            font-size: 1.3rem;
+            transition: transform 0.15s ease, background-color 0.2s ease;
+        }
+        .dock-center-power:active { transform: scale(0.92); }
+        .dock-center-power:hover { background-color: rgba(125, 249, 255, 0.1); }
     </style>
 </head>
 <body>
 
-    <!-- Main Entry Menu -->
-    <div class="menu-container" id="menuContainer">
-        <h1>MCR Fan Project</h1>
-        <div class="subtitle">The Black Parade Light Show</div>
-        
-        <!-- Offline Status Notification Banner -->
-        <div id="offlineStatus" class="offline-banner">
-            ⚡ Ready for Offline Use! Safe to disconnect.
+    <div class="phone-frame">
+        <!-- Main Menu -->
+        <div class="menu-container" id="menuContainer">
+            <div class="hero">
+                <div id="offlineStatus" class="offline-banner">⚡ Offline Ready</div>
+
+                <div class="hero-top-bar">
+                    <label class="mini-toggle" title="Battery Saver Mode">
+                        <input type="checkbox" id="batteryToggle" onchange="toggleBatterySaver()">
+                        <span class="mini-slider"></span>
+                    </label>
+                </div>
+
+                <div class="gothic-header-block">
+                    <span class="project-tag">MCR Asia Tour 2026</span>
+                    <h1 class="project-title">The Light Project</h1>
+                </div>
+            </div>
+
+            <div class="sheet">
+                <div class="sheet-header">Select Anthem</div>
+                <div class="song-grid" id="songList"></div>
+                <div class="footer-credit">Asia Tour Edition • Live As One</div>
+            </div>
         </div>
 
-        <p>When it's time for the fan action, tap your song choice below to light up the stadium!</p>
-        
-        <!-- Control Box with Brightness Tip & Battery Saver Toggle -->
-        <div class="control-box">
-            💡 <strong>Tip:</strong> Turn phone brightness to max!<br>
-            <label class="toggle-label">
-                <span>🔋 Battery Saver Mode</span>
-                <span class="switch">
-                    <input type="checkbox" id="batteryToggle" onchange="toggleBatterySaver()">
-                    <span class="slider"></span>
-                </span>
-            </label>
+        <!-- Custom Color Page -->
+        <div class="custom-color-page" id="customColorPage">
+            <div class="ccp-header">
+                <button class="ccp-back" onclick="closeCustomColorPage()" aria-label="Back">&larr;</button>
+            </div>
+            <div class="ccp-preview-wrap">
+                <div class="ccp-glow-orb" id="ccpGlowOrb"></div>
+            </div>
+            <div class="ccp-slider-section">
+                <div class="ccp-slider-caption">Custom Spectrum Selector</div>
+                <input type="range" class="ccp-slider" id="ccpSlider" min="0" max="360" value="185">
+                <button class="close-btn ccp-confirm" onclick="confirmCustomColor()" style="width:100%; max-width:400px; background-color:var(--c-cyan-bg); color:#000; border:none; padding:15px; font-weight:800; border-radius:14px; cursor:pointer; text-transform:uppercase; letter-spacing:1.5px;">Illuminate</button>
+            </div>
         </div>
-        
-        <!-- Buttons for Famous Last Words and Disenchanted -->
-        <button class="btn btn-song1" onclick="activateLight('#FF0000')">Famous Last Words</button>
-        <button class="btn btn-song2" onclick="activateLight('#00008B')">Disenchanted</button>
 
-        <div class="footer-credit">Made by MCR Fans, For MCR Fans</div>
-    </div>
+        <!-- Active Light Overlay Screen -->
+        <div class="light-overlay" id="lightOverlay">
+            <div class="light-bg" id="lightBg"></div>
 
-    <!-- The Full-Screen Solid Color Screen with Center-Bottom Exit Button -->
-    <div class="light-overlay" id="lightOverlay">
-        <div class="light-glow-text">MCR Fan Project</div>
-        <button class="close-btn" onclick="deactivateLight()">Exit Light</button>
+            <div class="curved-dock">
+                <button class="nav-action-btn" id="navPulseBtn" onclick="togglePulse()">
+                    <div class="nav-icon-circle">⚡</div>
+                    <span>Pulse</span>
+                </button>
+
+                <button class="dock-center-power" onclick="deactivateLight()" title="Exit Light">
+                    ⏻
+                </button>
+
+                <button class="nav-action-btn" onclick="openCustomColorPageFromLight()">
+                    <div class="nav-icon-circle">🎨</div>
+                    <span>Hue</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 1. Battery Saver Mode Toggle Logic
         function toggleBatterySaver() {
-            const body = document.body;
-            const toggle = document.getElementById('batteryToggle');
-            if (toggle.checked) {
-                body.classList.add('battery-saver');
-            } else {
-                body.classList.remove('battery-saver');
-            }
+            document.body.classList.toggle('battery-saver', document.getElementById('batteryToggle').checked);
         }
 
-        // 2. Register Service Worker & Listen for Offline Completion
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then((registration) => {
-                // A controller already existing at register-time means this
-                // page load was itself served offline-capable.
-                const hadControllerOnLoad = !!navigator.serviceWorker.controller;
-                if (hadControllerOnLoad) {
-                    showOfflineReady();
-                }
-
-                registration.onupdatefound = () => {
-                    const installingWorker = registration.installing;
-                    installingWorker.onstatechange = () => {
-                        if (installingWorker.state === 'installed') {
-                            if (hadControllerOnLoad) {
-                                // There was already a working offline version,
-                                // and now a newer one has finished installing
-                                // in the background — distinguish this from
-                                // first-time offline readiness.
-                                showUpdateReady();
-                            } else {
-                                showOfflineReady();
-                            }
-                        }
-                    };
-                };
-            }).catch((err) => {
-                console.log('Service Worker registration failed: ', err);
-            });
-        }
-
-        function showOfflineReady() {
-            const banner = document.getElementById('offlineStatus');
-            if (banner) {
-                banner.textContent = '⚡ Ready for Offline Use! Safe to disconnect.';
-                banner.style.display = 'block';
-            }
-        }
-
-        function showUpdateReady() {
-            const banner = document.getElementById('offlineStatus');
-            if (banner) {
-                banner.textContent = '🔄 Updated and ready — reopen the app to get the latest version.';
-                banner.style.display = 'block';
-            }
-        }
-
-        // 3. NoSleep & Light Activation Code
         let noSleep = null;
         try {
-            if (typeof NoSleep !== 'undefined') {
-                noSleep = new NoSleep();
-            }
-        } catch (e) {
-            console.log("NoSleep not supported or blocked");
-        }
+            if (typeof NoSleep !== 'undefined') noSleep = new NoSleep();
+        } catch (e) {}
 
         const menuContainer = document.getElementById('menuContainer');
+        const customColorPage = document.getElementById('customColorPage');
         const lightOverlay = document.getElementById('lightOverlay');
+        const lightBg = document.getElementById('lightBg');
+        const navPulseBtn = document.getElementById('navPulseBtn');
+
+        const SONGS = [
+            { name: "Famous Last Words", color: "#CE0313" },
+            { name: "Disenchanted", color: "#0066ff" }
+        ];
+
+        function renderSongTiles() {
+            const grid = document.getElementById('songList');
+            grid.innerHTML = '';
+
+            SONGS.forEach((song) => {
+                const tile = document.createElement('button');
+                tile.type = 'button';
+                tile.className = 'song-tile';
+                tile.style.background = song.color;
+                tile.innerHTML = `<div class="song-tile-title-box">${song.name}</div>`;
+                tile.addEventListener('click', () => activateLight(song.color));
+                grid.appendChild(tile);
+            });
+
+            const customTile = document.createElement('button');
+            customTile.type = 'button';
+            customTile.className = 'song-tile song-tile-custom';
+            customTile.innerHTML = `<div class="song-tile-title-box" style="background: rgba(0,0,0,0.65); border-color: var(--c-cyan-bg); color: var(--c-cyan-bg);">Custom Hue</div>`;
+            customTile.addEventListener('click', openCustomColorPage);
+            grid.appendChild(customTile);
+        }
+
+        renderSongTiles();
+
+        const ccpGlowOrb = document.getElementById('ccpGlowOrb');
+        const ccpSlider = document.getElementById('ccpSlider');
+
+        function hueToColor(hue) { return `hsl(${hue}, 100%, 60%)`; }
+        function hueToGlow(hue) { return `hsla(${hue}, 100%, 60%, 0.65)`; }
+
+        function updateGlowPreview(hue) {
+            ccpGlowOrb.style.background = hueToColor(hue);
+            ccpGlowOrb.style.boxShadow = `0 0 90px 35px ${hueToGlow(hue)}`;
+        }
+
+        ccpSlider.addEventListener('input', (e) => updateGlowPreview(e.target.value));
+
+        function openCustomColorPage() {
+            updateGlowPreview(ccpSlider.value);
+            menuContainer.style.display = 'none';
+            customColorPage.style.display = 'flex';
+            lightOverlay.style.display = 'none';
+        }
+
+        function openCustomColorPageFromLight() {
+            lightOverlay.style.display = 'none';
+            openCustomColorPage();
+        }
+
+        function closeCustomColorPage() {
+            customColorPage.style.display = 'none';
+            menuContainer.style.display = 'flex';
+        }
+
+        function confirmCustomColor() {
+            const color = hueToColor(ccpSlider.value);
+            customColorPage.style.display = 'none';
+            activateLight(color);
+        }
+
+        function togglePulse() {
+            const isActive = lightBg.classList.toggle('pulse');
+            navPulseBtn.classList.toggle('active', isActive);
+            navPulseBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        }
 
         function activateLight(colorHex) {
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
+            if (navigator.vibrate) navigator.vibrate(50);
+            if (noSleep) { try { noSleep.enable(); } catch (e) {} }
 
-            if (noSleep) {
-                try { noSleep.enable(); } catch (e) {}
-            }
-
-            lightOverlay.style.backgroundColor = colorHex;
+            lightBg.style.backgroundColor = colorHex;
             menuContainer.style.display = 'none';
+            customColorPage.style.display = 'none';
             lightOverlay.style.display = 'flex';
-
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            }
         }
 
         function deactivateLight() {
-            if (noSleep) {
-                try { noSleep.disable(); } catch (e) {}
-            }
+            if (noSleep) { try { noSleep.disable(); } catch (e) {} }
+
+            lightBg.classList.remove('pulse');
+            navPulseBtn.classList.remove('active');
+            navPulseBtn.setAttribute('aria-pressed', 'false');
 
             lightOverlay.style.display = 'none';
             menuContainer.style.display = 'flex';
-
-            if (document.exitFullscreen) {
-                document.exitFullscreen().catch(() => {});
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
         }
     </script>
 </body>
