@@ -15,7 +15,7 @@
     
     <style>
         :root {
-            --c-abyss: #000000;         /* Pitch Black Background */
+            --c-abyss: #000000;         /* Pitch Black Background (Prevents Stadium Flashbangs) */
             --c-tour-red: #CE0313;      /* Famous Last Words Card Red */
             --c-blue-anthem: #0055ff;   /* Disenchanted Card Blue */
             --c-cyan-accent: #7DF9FF;   /* Ghostly Clone Cyan Glow */
@@ -69,14 +69,20 @@
         .menu-container {
             display: flex;
             flex-direction: column;
-            align-items: center;          /* Centers all contents horizontally */
-            justify-content: center;      /* Centers contents vertically */
+            align-items: center;
+            justify-content: center;
             height: 100%;
             overflow-y: auto;
             background: var(--c-abyss);
             padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;
             position: relative;
-            text-align: center;           /* Ensures text aligns centrally */
+            text-align: center;
+            transition: filter 0.3s ease;
+        }
+
+        /* Battery Saver Mode dims interface brightness to save power */
+        body.battery-saver .menu-container {
+            filter: brightness(0.5);
         }
 
         .offline-banner {
@@ -92,7 +98,9 @@
             padding: 6px 14px;
             border-radius: 20px;
             border: 1px solid var(--c-cyan-accent);
-            display: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
             white-space: nowrap;
         }
 
@@ -385,6 +393,11 @@
             filter: brightness(1.35) saturate(1.25);
         }
 
+        /* Battery saver dims the active concert light screen as well */
+        body.battery-saver .light-bg {
+            filter: brightness(0.4) saturate(0.8);
+        }
+
         .light-bg.pulse {
             animation: vibrantPulse 1.4s ease-in-out infinite;
         }
@@ -480,7 +493,7 @@
     <div class="phone-frame">
         <!-- Main Menu -->
         <div class="menu-container" id="menuContainer">
-            <div id="offlineStatus" class="offline-banner">⚡ Offline Ready</div>
+            <div id="offlineStatus" class="offline-banner" style="display: none;">⚡ Offline Ready</div>
 
             <div class="header-block">
                 <h1 class="project-title-red">MCR Fan Project</h1>
@@ -555,8 +568,22 @@
     </div>
 
     <script>
+        // Register Service Worker for seamless offline caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then((reg) => {
+                    console.log('ServiceWorker registered: ', reg.scope);
+                    // Show offline-ready banner once cached
+                    document.getElementById('offlineStatus').style.display = 'flex';
+                }).catch((err) => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
         function toggleBatterySaver() {
-            document.body.classList.toggle('battery-saver', document.getElementById('batteryToggle').checked);
+            const isChecked = document.getElementById('batteryToggle').checked;
+            document.body.classList.toggle('battery-saver', isChecked);
         }
 
         let noSleep = null;
